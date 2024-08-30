@@ -28,6 +28,20 @@ def configure(data=None):
     toolbar = NavigationToolbar2Tk(canvas, root)
     canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
 
+    root.configure(bg='black')
+    toolbar.configure(bg='black')
+
+    toolbar.pack_forget()
+    toolbar.pack(side=BOTTOM, ipadx=5, pady=(0, 30))
+
+    for name, widget in toolbar.children.items():
+        if 'label' in name:
+            widget.pack_forget()
+        if 'button' in name or 'frame' in name:
+            widget.configure(background='white')
+            widget.pack_forget()
+            widget.pack(side=LEFT, anchor=E, padx=5)
+
     def open_pattern():
         nonlocal data
         file_path = askopenfilename(initialdir=CURRENT_DIR + '/patterns')
@@ -36,11 +50,11 @@ def configure(data=None):
         cax.set_data(data)
         fig.canvas.draw()
 
-    open_pattern_button = Button(toolbar, text='Open pattern', command=open_pattern)
-    open_pattern_button.pack(side=LEFT, padx=10)
+    open_pattern_button = Button(toolbar, text='Open pattern', font=('Ariel', 10), command=open_pattern)
+    open_pattern_button.pack(side=LEFT, padx=5)
 
     done = Button(toolbar, text='Done!', font=('Ariel', 10, 'bold'), bg='green', fg='white', command=root.destroy)
-    done.pack(side=LEFT, padx=10)
+    done.pack(side=LEFT, padx=5)
 
     ax.set_facecolor('black')  # Axes background color
     cax = ax.imshow(data, cmap='gray', interpolation='nearest', vmin=0, vmax=1)
@@ -60,7 +74,7 @@ def configure(data=None):
     ax.tick_params(which='both', size=0)  # Hide both major and minor ticks
 
     # Draw grid lines
-    ax.grid(which='minor', color=[0.05] * 3, linestyle='-', linewidth=1.5)
+    ax.grid(which='minor', color=[0.1] * 3, linestyle='-', linewidth=1.5)
 
     # Adjust layout to fit the plot into the window
     fig.tight_layout()

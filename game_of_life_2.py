@@ -38,7 +38,7 @@ def reset_zoom():
     padding = width / 20
     ax.set_xlim(min_x - padding, max_x + padding)
     ax.set_ylim(min_y - padding, max_y + padding)
-    text.set_text(f"Zoom: {int(width / GRID_SIZE * 100)}%")
+    text.set(f"Zoom: {int(width / GRID_SIZE * 100)}%")
 
 
 def update(_):
@@ -91,21 +91,40 @@ def add_creature(i, j):
     creatures[(i, j)] = Rectangle((i + 0.1, j + 0.1), 1 - 0.2, 1 - 0.2, facecolor='white', fill=True)
     ax.add_patch(creatures[(i, j)])
 
+def main():
+    global fig, canvas, text, ax, data
 
-data = configure()
+    data = configure()
+    root = tk.Tk()
+    root.configure(bg='black')
+    root.state('zoomed')
+    root.title('The Game of Life')
+    fig = Figure()
+    canvas = FigureCanvasTkAgg(fig, root)
+    canvas.get_tk_widget().pack(fill="both", expand=True)
 
-root = tk.Tk()
-root.state('zoomed')
-root.title('The Game of Life')
-fig = Figure()
-canvas = FigureCanvasTkAgg(fig, root)
-canvas.get_tk_widget().pack(fill="both", expand=True)
-ax = fig.subplots()
+    bottom_frame = tk.Frame(root, bg='black')
+    bottom_frame.pack(fill=tk.BOTH, pady=(0, 30), padx=30)
 
-text = fig.text(0.01, 0.01, f"Zoom: 100%", color='white')
-init()
+    text = tk.StringVar(value='Zoom: 100%')
 
-ani = FuncAnimation(fig, update, frames=20, interval=30)
-root.mainloop()
+    def restart():
+        root.destroy()
+        main()
 
-save_dialog(data)
+    tk.Button(bottom_frame, text='Save pattern', command=lambda: save_dialog(data),
+                            font=('Ariel', 10, 'bold')).pack(side=tk.LEFT, padx=(0, 10))
+    tk.Button(bottom_frame, text='Restart', font=('Ariel', 10, 'bold'),
+              bg='green', command=restart).pack(side=tk.LEFT)
+    tk.Label(bottom_frame, textvariable=text, bg='black', fg='white',
+             font=('Ariel', 15)).pack(side=tk.RIGHT)
+
+    ax = fig.subplots()
+    init()
+
+    ani = FuncAnimation(fig, update, frames=20, interval=30)
+    root.mainloop()
+
+
+data, fig, ax, canvas, text = [None] * 5
+main()
