@@ -108,8 +108,10 @@ def main():
 
     text = tk.StringVar(value='Zoom: 100%')
 
-    def restart():
+    def restart():  # TODO: There is a problem with restarting, some bug...
+        global data, fig, ax, canvas, text
         root.destroy()
+        reset()
         main()
 
     tk.Button(bottom_frame, text='Save pattern', command=lambda: save_dialog(data),
@@ -122,8 +124,17 @@ def main():
     ax = fig.subplots()
     init()
 
-    ani = FuncAnimation(fig, update, frames=20, interval=30)
+    ani = FuncAnimation(fig, update, frames=100, interval=30)
     root.mainloop()
+
+def reset():
+    global data, fig, ax, canvas, text, creatures, to_add, to_remove, min_x, max_x, min_y, max_y
+    data, fig, ax, canvas, text = [None] * 5
+    creatures = {}
+    to_add = deque()
+    to_remove = deque()
+    min_x, max_x, min_y, max_y = [- GRID_SIZE / 2 - 0.5, GRID_SIZE / 2 + 0.5, - GRID_SIZE / 2 - 0.5,
+                                  GRID_SIZE / 2 + 0.5]
 
 
 data, fig, ax, canvas, text = [None] * 5
