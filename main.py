@@ -2,15 +2,16 @@ from configuration import configure, save_dialog
 import tkinter as tk
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from game_of_life import finite_space_animation
+from default_game_of_life import finite_space_animation
 from infinite_game_of_life import infinite_space_animation
 
 GRID_SIZE = 50
-MODE = 'finite'
+INFINITE_MODE = 'infinite'
+NORMAL_MODE = 'normal'
 
 
 def main():
-    data = configure(GRID_SIZE)
+    data, mode = configure(GRID_SIZE)
 
     root = tk.Tk()
     root.configure(bg='black')
@@ -31,22 +32,26 @@ def main():
 
     tk.Button(bottom_frame, text='Save pattern', command=lambda: save_dialog(data),
               font=('Ariel', 10, 'bold')).pack(side=tk.LEFT, padx=(0, 10))
-    tk.Button(bottom_frame, text='Reset', font=('Ariel', 10, 'bold'),
+    tk.Button(bottom_frame, text='Reconfigure', font=('Ariel', 10, 'bold'),
               bg='green', command=restart).pack(side=tk.LEFT)
-    tk.Label(bottom_frame, textvariable=text, bg='black', fg='white',
-             font=('Ariel', 15)).pack(side=tk.RIGHT)
+
+    if mode == INFINITE_MODE:
+        tk.Label(bottom_frame, textvariable=text, bg='black', fg='white',
+                 font=('Ariel', 15)).pack(side=tk.RIGHT)
 
     ax = fig.subplots()
     fig.patch.set_facecolor('black')  # Figure background color
     ax.set_facecolor('black')  # Axes background color
-    ax.axis('off')
+    if mode == NORMAL_MODE:
+        ax.spines[:].set_color('white')
+
     ax.set_aspect('equal')
     # Hide major ticks and labels
     ax.set_xticks([])  # Disable major x-ticks
     ax.set_yticks([])  # Disable major y-ticks
     fig.tight_layout()
 
-    if MODE == 'finite':
+    if mode == NORMAL_MODE:
         ani = finite_space_animation(data, ax, fig, GRID_SIZE)
     else:
         ani = infinite_space_animation(data, ax, fig, GRID_SIZE, text)

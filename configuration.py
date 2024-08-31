@@ -1,20 +1,18 @@
 import numpy as np
 from tkinter import *
 from matplotlib.figure import Figure
-from save_patterns import load_pattern, save_pattern
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import os
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 
-GRID_SIZE = 50
-ZOOM = 21  # ZOOM X ZOOM grid
+ZOOM = 21  # that's the size of visible grid
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
-def configure(data=None):
+def configure(grid_size, data=None):
 
     if data is None:
-        data = np.zeros((GRID_SIZE, GRID_SIZE))
+        data = np.zeros((grid_size, grid_size))
 
     root = Tk()
     root.title('The Game of Life - Setup')
@@ -45,16 +43,28 @@ def configure(data=None):
     def open_pattern():
         nonlocal data
         file_path = askopenfilename(initialdir=CURRENT_DIR + '/patterns')
-        pattern = load_pattern(file_path)
-        data = np.minimum(data + pattern, 1)
-        cax.set_data(data)
-        fig.canvas.draw()
+        if file_path:
+            pattern = load_pattern(file_path)
+            data = np.minimum(data + pattern, 1)
+            cax.set_data(data)
+            fig.canvas.draw()
 
     open_pattern_button = Button(toolbar, text='Open pattern', font=('Ariel', 10), command=open_pattern)
     open_pattern_button.pack(side=LEFT, padx=5)
 
-    done = Button(toolbar, text='Done!', font=('Ariel', 10, 'bold'), bg='green', fg='white', command=root.destroy)
-    done.pack(side=LEFT, padx=5)
+    # game mode
+    mode = 'normal'
+
+    def done(normal=True):
+        nonlocal mode
+        if not normal:
+            mode = 'infinite'
+        root.destroy()
+
+    Button(toolbar, text='Done!',
+           font=('Ariel', 10, 'bold'), bg='green', fg='white', command=done).pack(side=LEFT, padx=5)
+    Button(toolbar, text='Infinite Mode',
+           font=('Ariel', 10, 'bold'), bg='blue', fg='white', command=lambda: done(False)).pack(side=LEFT, padx=5)
 
     ax.set_facecolor('black')  # Axes background color
     cax = ax.imshow(data, cmap='gray', interpolation='nearest', vmin=0, vmax=1)
@@ -63,8 +73,8 @@ def configure(data=None):
     ax.set_aspect('equal')
 
     # Define grid lines
-    ax.set_xticks(np.arange(-0.5, GRID_SIZE, 1), minor=True)
-    ax.set_yticks(np.arange(-0.5, GRID_SIZE, 1), minor=True)
+    ax.set_xticks(np.arange(-0.5, grid_size, 1), minor=True)
+    ax.set_yticks(np.arange(-0.5, grid_size, 1), minor=True)
 
     # Hide major ticks and labels
     ax.set_xticks([])  # Disable major x-ticks
@@ -80,8 +90,8 @@ def configure(data=None):
     fig.tight_layout()
 
     # Zoom settings
-    zoom_x_min, zoom_x_max = GRID_SIZE / 2 - ZOOM / 2, GRID_SIZE / 2 + ZOOM / 2  # Define x limits for zoom
-    zoom_y_min, zoom_y_max = GRID_SIZE / 2 - ZOOM / 2, GRID_SIZE / 2 + ZOOM / 2  # Define y limits for zoom
+    zoom_x_min, zoom_x_max = grid_size / 2 - ZOOM / 2, grid_size / 2 + ZOOM / 2  # Define x limits for zoom
+    zoom_y_min, zoom_y_max = grid_size / 2 - ZOOM / 2, grid_size / 2 + ZOOM / 2  # Define y limits for zoom
 
     # Set initial axis limits to zoom in
     ax.set_xlim(zoom_x_min - 0.5, zoom_x_max - 0.5)
@@ -92,7 +102,7 @@ def configure(data=None):
     def on_click(event, only_on=False):
         if event.inaxes == ax:
             x, y = int(event.xdata + 0.5), int(event.ydata + 0.5)
-            if 0 <= x < GRID_SIZE and 0 <= y < GRID_SIZE:
+            if 0 <= x < grid_size and 0 <= y < grid_size:
                 data[y, x] = 1 if only_on else 1 - data[y, x]  # Toggle cell
                 cax.set_data(data)
                 fig.canvas.draw()
@@ -118,7 +128,7 @@ def configure(data=None):
     fig.canvas.mpl_connect('button_release_event', on_release)
 
     root.mainloop()
-    return data
+    return data, mode
 
 
 def save_dialog(data):
@@ -127,3 +137,19 @@ def save_dialog(data):
                              initialfile='pattern1.txt')
     if path:
         save_pattern(data, path)
+
+
+def save_pattern(pattern, path='patterns/pattern1.txt'):
+    with open(path, 'w') as file:
+        for i in range(pattern.shape[0]):
+            for j in range(pattern.shape[1]):
+                file.write(str(int(pattern[i, j])))
+            file.write('\n')
+
+
+def load_pattern(path):
+    lines = []
+    with open(path, 'r') as file:
+        for line in file.readlines():
+            lines.append([int(c) for c in line.replace('\n', '')])
+    return np.asarray(lines)
