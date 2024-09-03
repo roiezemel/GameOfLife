@@ -5,7 +5,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from default_game_of_life import finite_space_animation
 from infinite_game_of_life import infinite_space_animation
 
-GRID_SIZE = 50
+GRID_SIZE = 110
 INFINITE_MODE = 'infinite'
 NORMAL_MODE = 'normal'
 
@@ -27,6 +27,9 @@ def main():
     text = tk.StringVar(value='Zoom: 100%')
 
     def restart():
+        ani.pause()
+        root.quit()
+        root.withdraw()
         root.destroy()
         main()
 

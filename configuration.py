@@ -45,6 +45,14 @@ def configure(grid_size, data=None):
         file_path = askopenfilename(initialdir=CURRENT_DIR + '/patterns')
         if file_path:
             pattern = load_pattern(file_path)
+
+            if pattern.shape != data.shape:
+                padding = np.zeros(data.shape)
+                i = (data.shape[0] - pattern.shape[0]) // 2
+                j = (data.shape[1] - pattern.shape[1]) // 2
+                padding[i:i + pattern.shape[0], j: j + pattern.shape[1]] = pattern
+                pattern = padding
+
             data = np.minimum(data + pattern, 1)
             cax.set_data(data)
             fig.canvas.draw()
