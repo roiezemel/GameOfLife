@@ -33,7 +33,21 @@ def main():
     tk.Button(bottom_frame, text='Save pattern', command=lambda: save_dialog(data),
               font=('Ariel', 10, 'bold')).pack(side=tk.LEFT, padx=(0, 10))
     tk.Button(bottom_frame, text='Reconfigure', font=('Ariel', 10, 'bold'),
-              bg='green', command=restart).pack(side=tk.LEFT)
+              bg='green', command=restart).pack(side=tk.LEFT, padx=(0, 10))
+
+    def change_speed(s):
+        interval = round(1000 / int(s))
+        if s == '100':
+            interval = 0
+        ani.event_source.interval = interval
+        ani._interval = interval
+
+    speed = tk.Scale(bottom_frame, orient=tk.HORIZONTAL, from_=1, to=100, command=change_speed,
+                     bg='black', activebackground='green', borderwidth=1,
+                     highlightthickness=0, showvalue=False,
+                     sliderrelief=tk.FLAT)
+    speed.pack(side=tk.LEFT)
+    speed.set(int(1000 / 30))
 
     if mode == INFINITE_MODE:
         tk.Label(bottom_frame, textvariable=text, bg='black', fg='white',
